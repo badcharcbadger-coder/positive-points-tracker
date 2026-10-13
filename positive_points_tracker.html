@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Positive Points Challenge</title>
+<style>
+:root{--ink:#172033;--muted:#667085;--line:#e4e7ec;--bg:#f5f7fb;--blue:#315efb;--green:#16804a;--gold:#f7c948}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1200px;margin:auto;padding:20px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:clamp(25px,3vw,38px);margin:0}h2{font-size:20px;margin:0 0 12px}.sub{color:var(--muted);margin-top:4px}
+.pill{background:#e8edff;color:#2447c6;border-radius:999px;padding:8px 12px;font-weight:750}
+.layout{display:grid;grid-template-columns:1fr 1.25fr;gap:16px}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 16px #1720330a}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.days button,.periods button,button,.filelabel{font:inherit;cursor:pointer;border:1px solid #cfd5df;background:white;border-radius:10px;padding:9px 12px;color:var(--ink)}
+button.active{background:var(--blue);color:white;border-color:var(--blue)}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button:focus-visible,input:focus-visible{outline:3px solid #9db1ff;outline-offset:2px}
+.goal{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #eef0f4}.goal:last-of-type{border-bottom:0}.goal input{width:22px;height:22px;accent-color:var(--green);flex:none;margin-top:1px}.goal label{cursor:pointer;flex:1}
+.scoreline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0}.score{font-size:32px;font-weight:850;color:var(--green)}.small{font-size:13px;color:var(--muted)}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid #edf0f4}th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}td.num,th.num{text-align:center;font-variant-numeric:tabular-nums}.rank{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#f0f2f6;font-weight:800}.bar{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden;margin-top:5px}.bar span{display:block;height:100%;background:#5b7cff;border-radius:99px}.prize{color:var(--green);font-size:12px;font-weight:800}.notyet{color:var(--muted);font-size:12px}.dailygrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.daycell{background:#f4f6fa;border-radius:8px;text-align:center;padding:7px 2px}.daycell strong{display:block;font-size:16px}.daycell span{font-size:11px;color:var(--muted)}.teamrow{display:grid;grid-template-columns:32px minmax(90px,1fr) 70px;gap:9px;align-items:center}.teamrow+.teamrow{margin-top:13px}.teamname{font-weight:750}.scorecol{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.note{background:#fff9e7;border:1px solid #f4dfa0;padding:12px;border-radius:12px;font-size:13px;color:#634b00;margin-top:14px}.footer{margin-top:14px;color:var(--muted);font-size:12px}
+@media(max-width:800px){main{padding:12px}.layout{grid-template-columns:1fr}.panel{padding:14px}.teamrow{grid-template-columns:30px minmax(70px,1fr) 58px}}
+@media print{body{background:white}main{max-width:none;padding:0}.toolbar,.controls,.note{display:none}.panel{box-shadow:none;break-inside:avoid}.layout{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><h1>⭐ Positive Points Challenge</h1><div class="sub">Six classes. Five daily goals. One great week.</div></div>
+    <div class="pill" id="weekLabel">Weekly goal: 20 / 25</div>
+  </header>
+  <div class="layout">
+    <section class="panel">
+      <h2>Record today's points</h2>
+      <div class="controls periods" id="periodButtons" aria-label="Choose period"></div>
+      <div class="controls days" id="dayButtons" aria-label="Choose day"></div>
+      <div class="scoreline"><div><strong id="currentTitle">Period 2 · Monday</strong><div class="small">Check a goal when the class earns it.</div></div><div class="score" id="dailyScore">0/5</div></div>
+      <div id="goals"></div>
+      <div class="toolbar">
+        <button id="clearDay">Clear this day</button>
+        <button id="exportBtn" class="primary">Export backup</button>
+        <label class="filelabel">Import backup<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+      </div>
+      <div class="note">Tip: score the whole period consistently. Each checked behavior earns one point, up to five per day. The prize threshold is 20 points for the week.</div>
+    </section>
+    <section class="panel">
+      <h2>🏆 Period leaderboard</h2>
+      <div class="small" style="margin-bottom:14px">Ranked by weekly points · ties share the same score</div>
+      <div id="leaderboard"></div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+      <h2>Weekly progress by period</h2>
+      <div id="weekly"></div>
+      <div class="toolbar">
+        <button id="printBtn">Print weekly report</button>
+        <button id="newWeekBtn">Start new week…</button>
+      </div>
+      <div class="footer" id="saveStatus">Scores save automatically in this browser on this device.</div>
+    </section>
+  </div>
+</main>
+<script>
+(()=>{
+const periods=[2,3,4,6,7,8],days=["Monday","Tuesday","Wednesday","Thursday","Friday"];
+const goals=["Ready to learn and get started promptly","Follow directions","Use respectful communication","Stay on task and participate","Leave the room clean and prepared"];
+const storageKey="positivePointsChallenge_v1";
+let selectedPeriod=2,selectedDay="Monday";
+let data={weekStart:"",scores:{}};
+function key(p,d){return `${p}|${d}`}
+function getChecks(p,d){return data.scores[key(p,d)]||[false,false,false,false,false]}
+function score(p,d){return getChecks(p,d).filter(Boolean).length}
+function total(p){return days.reduce((s,d)=>s+score(p,d),0)}
+function load(){try{const x=JSON.parse(localStorage.getItem(storageKey)||"null");if(x&&x.scores)data=x}catch(e){}}
+function save(){try{localStorage.setItem(storageKey,JSON.stringify(data));document.getElementById("saveStatus").textContent="Saved automatically in this browser on this device."}catch(e){document.getElementById("saveStatus").textContent="Browser storage is unavailable here. Export a backup regularly."}}
+function ensure(p,d){const k=key(p,d);if(!data.scores[k])data.scores[k]=[false,false,false,false,false];return data.scores[k]}
+function renderButtons(){
+ const pb=document.getElementById("periodButtons");pb.innerHTML="";
+ periods.forEach(p=>{const b=document.createElement("button");b.textContent="Period "+p;b.className=p===selectedPeriod?"active":"";b.onclick=()=>{selectedPeriod=p;render()};pb.appendChild(b)});
+ const db=document.getElementById("dayButtons");db.innerHTML="";
+ days.forEach(d=>{const b=document.createElement("button");b.textContent=d.slice(0,3);b.title=d;b.className=d===selectedDay?"active":"";b.onclick=()=>{selectedDay=d;render()};db.appendChild(b)});
+}
+function renderGoals(){
+ const checks=ensure(selectedPeriod,selectedDay),root=document.getElementById("goals");root.innerHTML="";
+ goals.forEach((g,i)=>{const row=document.createElement("div");row.className="goal";const input=document.createElement("input");input.type="checkbox";input.id="goal"+i;input.checked=!!checks[i];input.addEventListener("change",()=>{ensure(selectedPeriod,selectedDay)[i]=input.checked;save();render()});const label=document.createElement("label");label.htmlFor=input.id;label.textContent=g;row.append(input,label);root.appendChild(row)});
+ document.getElementById("currentTitle").textContent=`Period ${selectedPeriod} · ${selectedDay}`;
+ document.getElementById("dailyScore").textContent=score(selectedPeriod,selectedDay)+"/5";
+}
+function renderLeaderboard(){
+ const root=document.getElementById("leaderboard");root.innerHTML="";
+ const sorted=[...periods].sort((a,b)=>total(b)-total(a)||a-b);
+ sorted.forEach((p,i)=>{const row=document.createElement("div");row.className="teamrow";const rank=document.createElement("span");rank.className="rank";rank.textContent=i+1;const mid=document.createElement("div");const name=document.createElement("div");name.className="teamname";name.textContent="Period "+p;const bar=document.createElement("div");bar.className="bar";const fill=document.createElement("span");fill.style.width=(total(p)/25*100)+"%";if(total(p)>=20)fill.style.background="#16804a";bar.appendChild(fill);const status=document.createElement("div");status.className=total(p)>=20?"prize":"notyet";status.textContent=total(p)>=20?"🎁 PRIZE EARNED":`${20-total(p)} points to prize`;mid.append(name,bar,status);const val=document.createElement("div");val.className="scorecol";val.textContent=total(p)+"/25";row.append(rank,mid,val);root.appendChild(row)});
+}
+function renderWeekly(){
+ const root=document.getElementById("weekly");root.innerHTML="";
+ periods.forEach(p=>{const wrap=document.createElement("div");wrap.style.marginBottom="15px";const top=document.createElement("div");top.style.display="flex";top.style.justifyContent="space-between";top.style.gap="8px";const name=document.createElement("strong");name.textContent="Period "+p;const val=document.createElement("strong");val.textContent=total(p)+"/25";top.append(name,val);const grid=document.createElement("div");grid.className="dailygrid";days.forEach(d=>{const cell=document.createElement("div");cell.className="daycell";const s=document.createElement("strong");s.textContent=score(p,d);const label=document.createElement("span");label.textContent=d.slice(0,3);cell.append(s,label);grid.appendChild(cell)});wrap.append(top,grid);root.appendChild(wrap)});
+}
+function render(){renderButtons();renderGoals();renderLeaderboard();renderWeekly();save()}
+document.getElementById("clearDay").onclick=()=>{if(confirm(`Clear Period ${selectedPeriod}, ${selectedDay}?`)){data.scores[key(selectedPeriod,selectedDay)]=[false,false,false,false,false];render()}};
+document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="positive-points-week-backup.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importFile").addEventListener("change",e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!x.scores)throw Error();data=x;save();render();alert("Backup imported.")}catch(err){alert("That file does not look like a tracker backup.")}};r.readAsText(file);e.target.value=""});
+document.getElementById("printBtn").onclick=()=>window.print();
+document.getElementById("newWeekBtn").onclick=()=>{if(confirm("Start a new week? Export a backup first if you want to keep this week's record. All scores in this tracker will be cleared.")){data={weekStart:new Date().toISOString().slice(0,10),scores:{}};selectedDay="Monday";save();render()}};
+load();render();
+})();
+</script>
+</body>
+</html>
